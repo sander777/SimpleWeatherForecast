@@ -8,12 +8,18 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
 
-class Weather {
+class WeatherObserver {
     private var token: String = ""
     var location: String = ""
     var weather: JSONTree = JSONTree()
-    constructor(config: JSONTree) {
-        this.token = config["weather-token"].getValue()
+
+    constructor(configFile: File) {
+        var content = ""
+        val read = Scanner(configFile)
+        while (read.hasNext()) {
+            content += read.next()
+        }
+        this.token = MyString(content).getTree()["weather-token"].getValue()
     }
 
     constructor(configFile: File, location: String) {
@@ -28,6 +34,7 @@ class Weather {
 
     fun update() {
         val url = URL("http://api.weatherstack.com/current?access_key=${this.token}&query=${this.location}")
+//        val url = URL("http://192.168.1.56/weatherAPI/weatherforecast?city=${this.location}")
         val con: HttpURLConnection = url.openConnection() as HttpURLConnection
         con.requestMethod = "GET"
         val inStream = InputStreamReader(con.inputStream)
@@ -35,7 +42,10 @@ class Weather {
         for (i in inStream.readLines()) {
             buff += i
         }
-        this.weather = MyString(buff).getTree()
+        println(buff)
+        val weatherMyStr = MyString(buff)
+        this.weather = weatherMyStr.getTree()
+        println(weatherMyStr.str)
     }
 
     operator fun get(index: String): Node {
